@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: PSScriptAnalyzer
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -RequiredVersion 1.24.0 -Force -Scope CurrentUser
+          # Errors only (the naming warnings are deliberate), plus non-ASCII text in a script without a
+          # BOM: Windows PowerShell 5.1 reads such a file as ANSI and silently changes those characters.
+          $r = @(Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error)
+          $r += @(Invoke-ScriptAnalyzer -Path . -Recurse -IncludeRule PSUseBOMForUnicodeEncodedFile)
+          $r | Format-Table RuleName, Severity, ScriptName, Line, Message -AutoSize | Out-String -Width 300 | Write-Host
+          if ($r.Count) { exit 1 }
+
+  unit:
+    name: Pester
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pester 5
+        shell: powershell
+        run: |
+          Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser -SkipPublisherCheck
+          Import-Module Pester -MinimumVersion 5.5.0
+          $c = New-PesterConfiguration
+          $c.Run.Path = 'tests'
+          $c.Run.Exit = $true
+          $c.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $c
+
+  end-to-end:
+    name: Generate, build, install, uninstall
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Examples end to end
+        shell: powershell
+        run: .\tests\Invoke-EndToEnd.ps1 -WorkDir "$env:RUNNER_TEMP\e2e"
+      # The samples' installers, built from the current templates (they are not committed).
+      - name: Upload installers
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers
+          path: ${{ runner.temp }}/e2e/installers/
+          if-no-files-found: error
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs
+          path: |
+            ${{ runner.temp }}/e2e/**/install.log*
+            ${{ runner.temp }}/*.log
+          if-no-files-found: ignore

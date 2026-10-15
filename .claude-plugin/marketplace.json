@@ -1,0 +1,18 @@
+{
+  "name": "custom-installer-wix",
+  "owner": {
+    "name": "Urjitpatel28"
+  },
+  "metadata": {
+    "description": "Adds a WiX 6 installer project (a branded setup .exe) to a .NET solution."
+  },
+  "plugins": [
+    {
+      "name": "custom-installer-wix",
+      "source": "./",
+      "description": "Add a WiX v6 installer to a .NET solution: one <App>.Setup project that builds a branded setup .exe, upgrades in place, and can be refreshed later.",
+      "category": "development",
+      "keywords": ["wix", "installer", "msi", "setup", "dotnet", "wpf", "winforms", "visual-studio"]
+    }
+  ]
+}

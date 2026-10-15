@@ -1,0 +1,224 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "custom-installer-wix: from solution to Setup.exe",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "Entry point"
+        },
+        "backend": {
+          "label": "Script"
+        },
+        "security": {
+          "label": "Decision"
+        },
+        "database": {
+          "label": "MSI package"
+        },
+        "cloud": {
+          "label": "Setup.exe"
+        },
+        "messagebus": {
+          "label": "Refresh"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "agent",
+      "label": "Developer + agent"
+    },
+    {
+      "id": "scripts",
+      "label": "PowerShell scripts"
+    },
+    {
+      "id": "msbuild",
+      "label": "MSBuild + WiX 6.0.2"
+    }
+  ],
+  "phases": [
+    {
+      "id": "discover",
+      "label": "Discover",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "decide",
+      "label": "Decide + generate",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "build",
+      "label": "Build (twice)",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "invoke",
+    "find",
+    "ask",
+    "generate",
+    "msi",
+    "setup_exe"
+  ],
+  "nodes": [
+    {
+      "id": "invoke",
+      "lane": "agent",
+      "col": 0,
+      "type": "frontend",
+      "label": "/custom-installer-wix",
+      "sublabel": ".sln or .slnx",
+      "width": 156
+    },
+    {
+      "id": "find",
+      "lane": "scripts",
+      "col": 1,
+      "type": "backend",
+      "label": "Find-StartupProject",
+      "sublabel": "WinExe/Exe, TFM, RID",
+      "width": 142
+    },
+    {
+      "id": "ask",
+      "lane": "agent",
+      "col": 2,
+      "type": "security",
+      "label": "Ask once",
+      "sublabel": "manufacturer, scope, license",
+      "tag": "permanent identity",
+      "width": 118
+    },
+    {
+      "id": "refresh",
+      "lane": "scripts",
+      "col": 2,
+      "type": "messagebus",
+      "label": "-Refresh",
+      "sublabel": "keeps UpgradeCodes"
+    },
+    {
+      "id": "generate",
+      "lane": "scripts",
+      "col": 3,
+      "type": "backend",
+      "label": "New-WixSetup",
+      "sublabel": "<App>.Setup project"
+    },
+    {
+      "id": "refuse",
+      "lane": "agent",
+      "col": 4,
+      "type": "security",
+      "label": "Refused",
+      "sublabel": "MSIX WinUI, ARM64"
+    },
+    {
+      "id": "msi",
+      "lane": "msbuild",
+      "col": 4,
+      "type": "database",
+      "label": "Inner .msi build",
+      "sublabel": "publish -f TFM -r x64|x86",
+      "width": 132
+    },
+    {
+      "id": "setup_exe",
+      "lane": "msbuild",
+      "col": 5,
+      "type": "cloud",
+      "label": "<Product>Setup.exe",
+      "sublabel": ".NET Fx check, opt-in signing",
+      "tag": "only file in bin",
+      "width": 144
+    }
+  ],
+  "edges": [
+    {
+      "from": "invoke",
+      "to": "find",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "from": "find",
+      "to": "ask",
+      "label": "new app"
+    },
+    {
+      "from": "ask",
+      "to": "generate"
+    },
+    {
+      "from": "generate",
+      "to": "msi",
+      "label": "msbuild -restore",
+      "variant": "emphasis"
+    },
+    {
+      "from": "msi",
+      "to": "setup_exe",
+      "label": "embed"
+    },
+    {
+      "from": "find",
+      "to": "refresh",
+      "label": "outdated setup",
+      "role": "branch",
+      "variant": "dashed"
+    },
+    {
+      "from": "refresh",
+      "to": "msi",
+      "label": "rebuild",
+      "variant": "dashed"
+    },
+    {
+      "from": "generate",
+      "to": "refuse",
+      "label": "unsupported",
+      "role": "error",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "One project, one file",
+      "items": [
+        "<App>.Setup builds the .msi first, then the .exe around it",
+        "bin\\<Config>\\ holds only <Product>Setup.exe",
+        "Multi-target, x86 and unpackaged WinUI apps are published to fit"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Never mint a second identity",
+      "items": [
+        "An existing setup is refreshed, not regenerated",
+        "Product name, manufacturer and scope are permanent",
+        "UpgradeCodes survive -Refresh"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Safe on the user's PC",
+      "items": [
+        "Stops early if .NET Framework is too old",
+        "MajorUpgrade + REINSTALLMODE=amus, choices remembered",
+        "-p:SignCertificateThumbprint signs .msi, engine, .exe"
+      ]
+    }
+  ]
+}

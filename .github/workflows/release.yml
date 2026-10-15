@@ -1,0 +1,36 @@
+name: Release
+
+# Push a tag such as v5.0.0 (matching "version" in .claude-plugin/plugin.json) to publish a GitHub
+# Release with the skill as a zip, for agents that install skills from a download.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the tag matches the plugin version
+        shell: powershell
+        run: |
+          $version = (Get-Content -Raw .claude-plugin\plugin.json | ConvertFrom-Json).version
+          if ("v$version" -ne $env:GITHUB_REF_NAME) { throw "Tag $env:GITHUB_REF_NAME does not match plugin.json version $version." }
+      - name: Package the skill
+        shell: powershell
+        run: Compress-Archive -Path skills\custom-installer-wix -DestinationPath custom-installer-wix-skill.zip
+      - name: Publish
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The release notes are this version's section of CHANGELOG.md.
+          $text = Get-Content -Raw CHANGELOG.md
+          $m = [regex]::Match($text, "(?ms)^## $([regex]::Escape($env:GITHUB_REF_NAME.TrimStart('v')))\b[^\n]*\n(?<notes>.*?)(?=^## |\z)")
+          if (-not $m.Success) { throw "CHANGELOG.md has no section for $env:GITHUB_REF_NAME." }
+          Set-Content -Path notes.md -Value $m.Groups['notes'].Value.Trim()
+          gh release create $env:GITHUB_REF_NAME custom-installer-wix-skill.zip --title $env:GITHUB_REF_NAME --notes-file notes.md

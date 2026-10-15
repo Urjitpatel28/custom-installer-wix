@@ -1,0 +1,28 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicDesk", "ClinicDesk\ClinicDesk.csproj", "{AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3}"
+EndProject
+Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "ClinicDesk.Setup", "ClinicDesk.Setup\ClinicDesk.Setup.wixproj", "{01BF6B73-2B13-4D51-8E04-FADF3E51E040}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3} = {AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC1BA0CC-B838-49DC-99D4-6E6A93CEC0F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01BF6B73-2B13-4D51-8E04-FADF3E51E040}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{01BF6B73-2B13-4D51-8E04-FADF3E51E040}.Release|Any CPU.ActiveCfg = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

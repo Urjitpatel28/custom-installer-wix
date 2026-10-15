@@ -1,0 +1,18 @@
+bin/
+obj/
+.vs/
+*.user
+UpgradeLog*.htm
+_UpgradeReport_Files/
+# skill discovery links made by scripts/link-skills.*
+/.claude/skills/
+/.agents/skills/
+/.opencode/skills/
+# Pester output
+testResults.xml
+# Launch-video workspace (/brag): ~13 MB, and its fonts (Segoe UI) are not redistributable. Link the
+# video from a release or the README instead.
+/brag-output/
+/brag-output-*/
+# Generated screenshot checks of docs/diagrams (archify); the diagram itself is kept.
+/docs/diagrams/*.visual-check.*

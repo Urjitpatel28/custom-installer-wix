@@ -1,0 +1,12 @@
+{
+  "name": "custom-installer-wix",
+  "version": "5.0.0",
+  "description": "Add a WiX v6 installer to a .NET solution: one <App>.Setup project that builds a branded setup .exe, upgrades in place, and can be refreshed later.",
+  "author": {
+    "name": "Urjitpatel28"
+  },
+  "homepage": "https://github.com/Urjitpatel28/custom-installer-wix",
+  "repository": "https://github.com/Urjitpatel28/custom-installer-wix",
+  "license": "MIT",
+  "keywords": ["wix", "installer", "msi", "setup", "dotnet", "wpf", "winforms", "visual-studio"]
+}
