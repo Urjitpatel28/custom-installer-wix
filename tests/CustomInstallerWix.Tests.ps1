@@ -2,6 +2,9 @@
 # Fast tests only: nothing here builds an installer (Invoke-EndToEnd.ps1 does that against the examples).
 
 BeforeAll {
+    # GitHub Actions runs PowerShell steps with 'Stop', under which Windows PowerShell 5.1 throws on the
+    # first stderr line a redirected native command writes (the generator's refusals, git's warnings).
+    $ErrorActionPreference = 'Continue'
     $repo = Split-Path -Parent $PSScriptRoot
     $scripts = Join-Path $repo 'skills\custom-installer-wix\scripts'
     Import-Module (Join-Path $scripts 'CustomInstallerWix.psm1') -Force
